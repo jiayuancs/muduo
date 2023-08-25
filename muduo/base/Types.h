@@ -76,6 +76,8 @@ inline void memZero(void* p, size_t n)
 // implicit_cast would have been part of the C++ standard library,
 // but the proposal was submitted too late.  It will probably make
 // its way into the language in the future.
+
+// up_cast时用于替换static_cast
 template<typename To, typename From>
 inline To implicit_cast(From const &f)
 {
@@ -100,6 +102,10 @@ inline To implicit_cast(From const &f)
 //    if (dynamic_cast<Subclass2>(foo)) HandleASubclass2Object(foo);
 // You should design the code some other way not to need this.
 
+// 将基类指针转为派生类指针，用于替代dynamic_cast
+// 1.因为但凡程序设计正确，dynamic_cast就可以用static_cast来替换，而后者比前者更有效率。 
+// 2.dynamic_cast可能失败(在运行时crash)，运行时RTTI不是好的设计，
+//   不应该在运行时RTTI或者需要RTTI时一般都有更好的选择
 template<typename To, typename From>     // use like this: down_cast<T*>(foo);
 inline To down_cast(From* f)                     // so we only accept pointers
 {
@@ -111,7 +117,7 @@ inline To down_cast(From* f)                     // so we only accept pointers
   {
     implicit_cast<From*, To>(0);
   }
-
+// protocol buffers是一种灵活，高效，自动化的机制，用于序列化结构化数据
 #if !defined(NDEBUG) && !defined(GOOGLE_PROTOBUF_NO_RTTI)
   assert(f == NULL || dynamic_cast<To>(f) != NULL);  // RTTI: debug mode only!
 #endif

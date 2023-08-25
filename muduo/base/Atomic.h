@@ -15,6 +15,8 @@ namespace muduo
 
 namespace detail
 {
+
+// C++11已经引入了std::atomic，下面这个类不再使用
 template<typename T>
 class AtomicIntegerT : noncopyable
 {
