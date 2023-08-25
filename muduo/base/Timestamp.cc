@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 
+// 用于实现跨平台格式化64位整数
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif
@@ -16,6 +17,7 @@
 
 using namespace muduo;
 
+// 编译时断言
 static_assert(sizeof(Timestamp) == sizeof(int64_t),
               "Timestamp is same size as int64_t");
 
@@ -32,8 +34,9 @@ string Timestamp::toFormattedString(bool showMicroseconds) const
 {
   char buf[64] = {0};
   time_t seconds = static_cast<time_t>(microSecondsSinceEpoch_ / kMicroSecondsPerSecond);
+  // 计算年月日时分秒
   struct tm tm_time;
-  gmtime_r(&seconds, &tm_time);
+  gmtime_r(&seconds, &tm_time);  // 函数名中的`_r`表示该函数可重入（线程安全）
 
   if (showMicroseconds)
   {
@@ -55,6 +58,7 @@ string Timestamp::toFormattedString(bool showMicroseconds) const
 Timestamp Timestamp::now()
 {
   struct timeval tv;
+  // gettimeofday第二个参数是时区，传入NULL表示不使用时区
   gettimeofday(&tv, NULL);
   int64_t seconds = tv.tv_sec;
   return Timestamp(seconds * kMicroSecondsPerSecond + tv.tv_usec);

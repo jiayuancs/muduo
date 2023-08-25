@@ -59,6 +59,8 @@ class Timestamp : public muduo::copyable
   /// Get time of now.
   ///
   static Timestamp now();
+  
+  // microSecondsSinceEpoch_=0用于标识无效时间
   static Timestamp invalid()
   {
     return Timestamp();

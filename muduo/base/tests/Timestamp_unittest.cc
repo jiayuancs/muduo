@@ -18,6 +18,7 @@ void benchmark()
 {
   const int kNumber = 1000*1000;
 
+  // 计算执行kNumber次Timestamp::now()所花费的时间
   std::vector<Timestamp> stamps;
   stamps.reserve(kNumber);
   for (int i = 0; i < kNumber; ++i)
@@ -28,6 +29,7 @@ void benchmark()
   printf("%s\n", stamps.back().toString().c_str());
   printf("%f\n", timeDifference(stamps.back(), stamps.front()));
 
+  // 测试相邻两次时间的时间差大小
   int increments[100] = { 0 };
   int64_t start = stamps.front().microSecondsSinceEpoch();
   for (int i = 1; i < kNumber; ++i)
