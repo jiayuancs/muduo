@@ -13,6 +13,8 @@ namespace muduo
 namespace CurrentThread
 {
   // internal
+  // __thread 使得每个线程都独自拥有这些变量
+  // 相当于每个线程的全局变量
   extern __thread int t_cachedTid;
   extern __thread char t_tidString[32];
   extern __thread int t_tidStringLength;
@@ -21,6 +23,8 @@ namespace CurrentThread
 
   inline int tid()
   {
+    // __builtin_expect(exp, true/false) 用于告诉编译器条件 exp 很有可能为true/false,
+    // 从而便于CPU流水线预取指令
     if (__builtin_expect(t_cachedTid == 0, 0))
     {
       cacheTid();

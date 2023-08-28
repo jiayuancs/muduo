@@ -99,6 +99,9 @@ __END_DECLS
 
 #else  // CHECK_PTHREAD_RETURN_VALUE
 
+// 断言返回值为0
+// (void) errnum;语句的作用是防止编译器报“变量定义但未使用”的警告，
+// 因为 assert 语句仅在 Debug 模式下有效，在 Release 模式下会被忽略
 #define MCHECK(ret) ({ __typeof__ (ret) errnum = (ret);         \
                        assert(errnum == 0); (void) errnum;})
 
@@ -166,6 +169,9 @@ class CAPABILITY("mutex") MutexLock : noncopyable
  private:
   friend class Condition;
 
+  // 配合条件变量使用。条件变量在 wait 的时候回释放锁并等待，唤醒后获取锁，
+  // 由于这里的互斥锁是自定义的类，其内部还有一个 holder_ 成员，该成员也应该
+  // 在条件变量 wait 时清空，唤醒后重新设置。
   class UnassignGuard : noncopyable
   {
    public:
@@ -195,7 +201,7 @@ class CAPABILITY("mutex") MutexLock : noncopyable
   }
 
   pthread_mutex_t mutex_;
-  pid_t holder_;
+  pid_t holder_;   // 拥有该锁的LWP的PID（tid），0表示没有被任何线程持有
 };
 
 // Use as a stack variable, eg.
@@ -204,6 +210,7 @@ class CAPABILITY("mutex") MutexLock : noncopyable
 //   MutexLockGuard lock(mutex_);
 //   return data_.size();
 // }
+// MutexLockGuard类使用 RAII 技法封装
 class SCOPED_CAPABILITY MutexLockGuard : noncopyable
 {
  public:
@@ -228,6 +235,8 @@ class SCOPED_CAPABILITY MutexLockGuard : noncopyable
 // Prevent misuse like:
 // MutexLockGuard(mutex_);
 // A tempory object doesn't hold the lock for long!
+// 定义下面的宏是为了避免我们定义临时 MutexLockGuard 对象，
+// 毕竟临时的 MutexLockGuard 对象似乎也没啥作用，创建完毕立马就释放了
 #define MutexLockGuard(x) error "Missing guard object name"
 
 #endif  // MUDUO_BASE_MUTEX_H

@@ -19,12 +19,15 @@ __thread int t_tidStringLength = 6;
 __thread const char* t_threadName = "unknown";
 static_assert(std::is_same<int, pid_t>::value, "pid_t should be int");
 
+// 返回当前函数调用顺序
 string stackTrace(bool demangle)
 {
   string stack;
   const int max_frames = 200;
   void* frame[max_frames];
+  // 返回调用时的函数栈帧起始地址
   int nptrs = ::backtrace(frame, max_frames);
+  // 将栈帧起始地址转换为函数名
   char** strings = ::backtrace_symbols(frame, nptrs);
   if (strings)
   {

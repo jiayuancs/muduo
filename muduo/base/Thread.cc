@@ -23,11 +23,16 @@ namespace muduo
 namespace detail
 {
 
+// 用于获取线程(LWP)的真实ID（不是pthread_t）
+// glibc 没有实现该函数，因此只能通过系统调用的方式获取
 pid_t gettid()
 {
   return static_cast<pid_t>(::syscall(SYS_gettid));
 }
 
+// fork 可能是在主线程中调用，也可能是在子线程中调用，调用成功后，
+// 子进程中只有调用 fork 的线程存在，其他线程在子进程中均 `pthread_exit`。
+// 子进程中唯一存在的线程成为主线程，所以 afterFork函数将其名字设置为 main
 void afterFork()
 {
   muduo::CurrentThread::t_cachedTid = 0;
@@ -43,10 +48,12 @@ class ThreadNameInitializer
   {
     muduo::CurrentThread::t_threadName = "main";
     CurrentThread::tid();
+    // 调用fork函数成功后，子进程先执行 afterFork 函数
     pthread_atfork(NULL, NULL, &afterFork);
   }
 };
 
+// 执行初始化
 ThreadNameInitializer init;
 
 struct ThreadData
@@ -69,6 +76,11 @@ struct ThreadData
 
   void runInThread()
   {
+    // tid_ 指向 Thread 对象中的 tid_ 成员，（latch_同理）
+    // 执行到这里时，已处于新的线程中，因此需要更新 Thread 对象中的 tid_ 成员。
+    // 这里更新完之后，立马将 tid_ 指针置为 NULL，从而与 Thread 对象切断了联系，
+    // 此后执行的所有代码都与 Thread 对象无关，因此即使 Thread 对象被析构了，
+    // 该线程仍可继续正常运行
     *tid_ = muduo::CurrentThread::tid();
     tid_ = NULL;
     latch_->countDown();

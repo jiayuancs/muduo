@@ -13,6 +13,7 @@
 namespace muduo
 {
 
+// 条件变量类
 class Condition : noncopyable
 {
  public:
@@ -29,6 +30,7 @@ class Condition : noncopyable
 
   void wait()
   {
+    // 在线程阻塞前清空锁的拥有者（线程被唤醒后重新设置）
     MutexLock::UnassignGuard ug(mutex_);
     MCHECK(pthread_cond_wait(&pcond_, mutex_.getPthreadMutex()));
   }

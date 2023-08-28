@@ -39,15 +39,15 @@ class Thread : noncopyable
  private:
   void setDefaultName();
 
-  bool       started_;
-  bool       joined_;
-  pthread_t  pthreadId_;
-  pid_t      tid_;
-  ThreadFunc func_;
-  string     name_;
-  CountDownLatch latch_;
+  bool       started_;    // 线程是否启动了
+  bool       joined_;     // 线程是否被join
+  pthread_t  pthreadId_;  // 线程 ID
+  pid_t      tid_;        // 线程的真实 PID（LWP）
+  ThreadFunc func_;       // 线程回调函数
+  string     name_;       // 线程名称
+  CountDownLatch latch_;  // 
 
-  static AtomicInt32 numCreated_;
+  static AtomicInt32 numCreated_;  // 已经创建的线程个数
 };
 
 }  // namespace muduo

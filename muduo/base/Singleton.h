@@ -37,6 +37,7 @@ class Singleton : noncopyable
 
   static T& instance()
   {
+    // 确保 init() 只被执行一次
     pthread_once(&ponce_, &Singleton::init);
     assert(value_ != NULL);
     return *value_;
@@ -48,12 +49,16 @@ class Singleton : noncopyable
     value_ = new T();
     if (!detail::has_no_destroy<T>::value)
     {
+      // 在整个程序结束的时候（执行exit函数，或main函数return），执行 destroy 函数
       ::atexit(destroy);
     }
   }
 
   static void destroy()
   {
+    // 默认情况下，释放不完全类型的指针并不会报错。
+    // 当类型 T 是不完全类型（声明之后，定义之前）时，下面的语句中的数组元素个数取 -1，
+    // 从而导致编译错误，便于我们及时发现错误
     typedef char T_must_be_complete_type[sizeof(T) == 0 ? -1 : 1];
     T_must_be_complete_type dummy; (void) dummy;
 

@@ -14,7 +14,7 @@
 
 namespace muduo
 {
-
+// 生产者消费者模型：有界缓冲区
 template<typename T>
 class BoundedBlockingQueue : noncopyable
 {
@@ -82,6 +82,9 @@ class BoundedBlockingQueue : noncopyable
   mutable MutexLock          mutex_;
   Condition                  notEmpty_ GUARDED_BY(mutex_);
   Condition                  notFull_ GUARDED_BY(mutex_);
+  // 使用 boost::circular_buffer 性能会更好
+  // TODO: 自己编写一个环形环形缓冲区替换这里的 deque
+  // https://www.zhihu.com/question/66760616/answer/247646426
   std::deque<T>              queue_ GUARDED_BY(mutex_);
 };
 

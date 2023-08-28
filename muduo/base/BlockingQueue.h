@@ -14,7 +14,7 @@
 
 namespace muduo
 {
-
+// 生产者消费者模型：无界缓冲区
 template<typename T>
 class BlockingQueue : noncopyable
 {
@@ -28,6 +28,12 @@ class BlockingQueue : noncopyable
 
   void put(const T& x)
   {
+    // notify() 也可以在 lock 的作用域之外，从而减小临界区：
+    //  {
+    //    MutexLockGuard lock(mutex_);
+    //    queue_.push_back(x);
+    //  }
+    //  notEmpty_.notify();
     MutexLockGuard lock(mutex_);
     queue_.push_back(x);
     notEmpty_.notify(); // wait morphing saves us
@@ -63,7 +69,7 @@ class BlockingQueue : noncopyable
 
  private:
   mutable MutexLock mutex_;
-  Condition         notEmpty_ GUARDED_BY(mutex_);
+  Condition         notEmpty_ GUARDED_BY(mutex_);  // 缓冲区无限大，所以只需要一个条件变量
   std::deque<T>     queue_ GUARDED_BY(mutex_);
 };
 

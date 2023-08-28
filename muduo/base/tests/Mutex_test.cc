@@ -50,18 +50,20 @@ int main()
   const int kMaxThreads = 8;
   g_vec.reserve(kMaxThreads * kCount);
 
+  // 测试单纯存入 kCount 个数需要多长时间
   Timestamp start(Timestamp::now());
   for (int i = 0; i < kCount; ++i)
   {
     g_vec.push_back(i);
   }
-
   printf("single thread without lock %f\n", timeDifference(Timestamp::now(), start));
 
+  // 测试存入 kCount 个数需要多长时间（每次都获取并释放锁）
   start = Timestamp::now();
   threadFunc();
   printf("single thread with lock %f\n", timeDifference(Timestamp::now(), start));
 
+  // 开 [1,kMaxThreads] 个线程，测试每个线程存入 kCount 个数需要多长时间（每次都获取并释放锁）
   for (int nthreads = 1; nthreads < kMaxThreads; ++nthreads)
   {
     std::vector<std::unique_ptr<Thread>> threads;

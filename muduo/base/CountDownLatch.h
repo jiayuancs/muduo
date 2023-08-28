@@ -12,14 +12,19 @@
 namespace muduo
 {
 
+// 计时器门闩
+// 既可用于所有子线程等待主线程发起“起跑”，也可用于主线程
+// 等待子线程初始化完毕后才开始工作
 class CountDownLatch : noncopyable
 {
  public:
 
   explicit CountDownLatch(int count);
 
+  // 等待计数为0，如大于0则阻塞
   void wait();
 
+  // 计数器减1，如果减到0，则通知所有阻塞在该条件变量上的线程
   void countDown();
 
   int getCount() const;

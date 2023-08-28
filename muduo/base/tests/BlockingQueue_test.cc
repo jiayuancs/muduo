@@ -43,6 +43,7 @@ class Test
 
   void joinAll()
   {
+    // 向无界缓冲区放入若干个 `stop` 标志，每个线程取走一个并结束
     for (size_t i = 0; i < threads_.size(); ++i)
     {
       queue_.put("stop");

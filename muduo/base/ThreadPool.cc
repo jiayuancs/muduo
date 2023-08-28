@@ -43,17 +43,22 @@ void ThreadPool::start(int numThreads)
           std::bind(&ThreadPool::runInThread, this), name_+id));
     threads_[i]->start();
   }
+  // 如果numThreads为0，则会再调用run函数时直接执行任务，不会进入runInThread函数，
+  // 因此需要再这里执行 threadInitCallback_
   if (numThreads == 0 && threadInitCallback_)
   {
     threadInitCallback_();
   }
 }
 
+// 任务未执行完毕的线程仍会继续执行，
+// 已执行完毕的线程立即退出
 void ThreadPool::stop()
 {
   {
   MutexLockGuard lock(mutex_);
   running_ = false;
+  // 欺骗线程池中阻塞的线程，让其运行并死亡
   notEmpty_.notifyAll();
   }
   for (auto& thr : threads_)
@@ -74,7 +79,7 @@ void ThreadPool::run(Task task)
   {
     task();
   }
-  else
+  else  // 生产者
   {
     MutexLockGuard lock(mutex_);
     while (isFull())
@@ -88,10 +93,14 @@ void ThreadPool::run(Task task)
   }
 }
 
+// 消费者
 ThreadPool::Task ThreadPool::take()
 {
   MutexLockGuard lock(mutex_);
   // always use a while-loop, due to spurious wakeup
+  // 这里等待的条件有两个：
+  // 1. 任务队列非空
+  // 2. 停止运行（执行了stop()函数）
   while (queue_.empty() && running_)
   {
     notEmpty_.wait();
@@ -101,6 +110,8 @@ ThreadPool::Task ThreadPool::take()
   {
     task = queue_.front();
     queue_.pop_front();
+    // 当 maxQueueSize == 0 时（即任务队列的长度无上限），即具有无界缓冲区的生产者消费者模型，
+    // 此时只需要一个条件变量即可，具体见 muduo/base/BlockingQueue.h 的实现思路
     if (maxQueueSize_ > 0)
     {
       notFull_.notify();

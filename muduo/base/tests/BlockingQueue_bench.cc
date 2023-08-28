@@ -72,6 +72,7 @@ class Bench
       muduo::Timestamp now(muduo::Timestamp::now());
       if (t.valid())
       {
+        // 产品被生产到产品被消费之间的时间差
         int delay = static_cast<int>(timeDifference(now, t) * 1000000);
         // printf("tid=%d, latency = %d us\n",
         //        muduo::CurrentThread::tid(), delay);

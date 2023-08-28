@@ -35,6 +35,9 @@ void test(int maxSize)
   }
   LOG_WARN << "Done";
 
+  // Note: 这里妙啊，当 latch.wait() 返回时，说明任务队列已经为空，
+  // 所有任务都已被线程池中的线程取走，因此可以执行 pool.stop()。
+  // stop 函数会使所有空闲的线程退出，并等待未执行完任务的线程结束。
   muduo::CountDownLatch latch(1);
   pool.run(std::bind(&muduo::CountDownLatch::countDown, &latch));
   latch.wait();
@@ -43,8 +46,8 @@ void test(int maxSize)
 
 int main()
 {
-  test(0);
-  test(1);
+  test(0);  // 不限制任务队列的长度（run 函数不会发生阻塞）
+  test(1);  // 任务队列的最大长度为1
   test(5);
   test(10);
   test(50);
