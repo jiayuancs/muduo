@@ -19,11 +19,12 @@ namespace detail
 {
 // This doesn't detect inherited member functions!
 // http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions
+// 这里使用 SFINAE 的特性检查一个类型是否具有 `no_destroy` 成员（该成员由我们自行定义，相当于为类打上一个tag）
 template<typename T>
 struct has_no_destroy
 {
-  template <typename C> static char test(decltype(&C::no_destroy));
-  template <typename C> static int32_t test(...);
+  template <typename C> static char test(decltype(&C::no_destroy));  // 参数是一个地址
+  template <typename C> static int32_t test(...);  // 参数任意（省略符形参的优先级最低）
   const static bool value = sizeof(test<T>(0)) == 1;
 };
 }  // namespace detail

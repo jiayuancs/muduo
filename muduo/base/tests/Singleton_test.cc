@@ -28,6 +28,8 @@ class TestNoDestroy : muduo::noncopyable
 {
  public:
   // Tag member for Singleton<T>
+  // 定义了 no_destroy 成员，从而使得 detail::has_no_destroy<TestNoDestroy>::value 的值为 true，
+  // 于是 Singleton 的 init 函数便不会注册销毁函数
   void no_destroy();
 
   TestNoDestroy()
@@ -60,6 +62,8 @@ int main()
          muduo::CurrentThread::tid(),
          &muduo::Singleton<Test>::instance(),
          muduo::Singleton<Test>::instance().name().c_str());
+  
+  // 不销毁该实例，则会出现内存泄漏
   muduo::Singleton<TestNoDestroy>::instance();
   printf("with valgrind, you should see %zd-byte memory leak.\n", sizeof(TestNoDestroy));
 }

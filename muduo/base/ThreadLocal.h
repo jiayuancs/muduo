@@ -14,6 +14,7 @@
 namespace muduo
 {
 
+// 线程特定数据 Thread-specific Data(TSD)
 template<typename T>
 class ThreadLocal : noncopyable
 {
@@ -25,6 +26,7 @@ class ThreadLocal : noncopyable
 
   ~ThreadLocal()
   {
+    // 删除键并不会执行与之关联的析构函数（析构函数在线程退出时执行）
     MCHECK(pthread_key_delete(pkey_));
   }
 

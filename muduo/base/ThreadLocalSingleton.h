@@ -14,6 +14,7 @@
 namespace muduo
 {
 
+// 线程私有的单例模式（每个线程一个）
 template<typename T>
 class ThreadLocalSingleton : noncopyable
 {
@@ -46,6 +47,8 @@ class ThreadLocalSingleton : noncopyable
     t_value_ = 0;
   }
 
+  // Deleter类仅仅是为了能够在线程退出时自动销毁 t_value_ 指向的对象,
+  // 因此没有提供 get 接口
   class Deleter
   {
    public:
@@ -68,6 +71,7 @@ class ThreadLocalSingleton : noncopyable
     pthread_key_t pkey_;
   };
 
+  // t_value_ 是指针类型，指针是 POD 类型，因此可以直接使用 __thread 关键字
   static __thread T* t_value_;
   static Deleter deleter_;
 };
