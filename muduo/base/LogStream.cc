@@ -44,6 +44,9 @@ size_t convert(char buf[], T value)
 
   do
   {
+    // lsd 是 last digital 的缩写，
+    // 如果 i 是负数，则得到的 lsd 也是负数，
+    // 这也是为什么 zero 指向的是 digits 的中间字符。
     int lsd = static_cast<int>(i % 10);
     i /= 10;
     *p++ = zero[lsd];
@@ -59,6 +62,7 @@ size_t convert(char buf[], T value)
   return p - buf;
 }
 
+// 将指针以16进制的形式转换为字符串
 size_t convertHex(char buf[], uintptr_t value)
 {
   uintptr_t i = value;
@@ -102,6 +106,7 @@ void FixedBuffer<SIZE>::cookieEnd()
 
 void LogStream::staticCheck()
 {
+  // digits10 的值是类型 T 能够表示多少位10进制数，且不会损失精度
   static_assert(kMaxNumericSize - 10 > std::numeric_limits<double>::digits10,
                 "kMaxNumericSize is large enough");
   static_assert(kMaxNumericSize - 10 > std::numeric_limits<long double>::digits10,
@@ -189,6 +194,7 @@ LogStream& LogStream::operator<<(double v)
 {
   if (buffer_.avail() >= kMaxNumericSize)
   {
+    // %g 根据数值不同自动选择 %f 或 %e
     int len = snprintf(buffer_.current(), kMaxNumericSize, "%.12g", v);
     buffer_.add(len);
   }
@@ -198,6 +204,7 @@ LogStream& LogStream::operator<<(double v)
 template<typename T>
 Fmt::Fmt(const char* fmt, T val)
 {
+  // 若 T 为算术类型（整型或浮点），则 value 值为 true
   static_assert(std::is_arithmetic<T>::value == true, "Must be arithmetic type");
 
   length_ = snprintf(buf_, sizeof buf_, fmt, val);

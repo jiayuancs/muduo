@@ -54,6 +54,7 @@ Logger::LogLevel initLogLevel()
     return Logger::INFO;
 }
 
+// 全局变量，记录当前输出的日志级别
 Logger::LogLevel g_logLevel = initLogLevel();
 
 const char* LogLevelName[Logger::NUM_LOG_LEVELS] =
@@ -102,6 +103,7 @@ void defaultOutput(const char* msg, int len)
 
 void defaultFlush()
 {
+  // fflush(FILE *__stream) 函数将缓冲区内的数据写回参数 __stream 指定的文件中
   fflush(stdout);
 }
 

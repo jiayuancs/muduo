@@ -21,7 +21,8 @@ namespace detail
 const int kSmallBuffer = 4000;
 const int kLargeBuffer = 4000*1000;
 
-template<int SIZE>
+// 固定大小的缓冲区
+template<int SIZE>  // SIZE 是非类型模板参数
 class FixedBuffer : noncopyable
 {
  public:
@@ -61,7 +62,8 @@ class FixedBuffer : noncopyable
   const char* debugString();
   void setCookie(void (*cookie)()) { cookie_ = cookie; }
   // for used by unit test
-  string toString() const { return string(data_, length()); }
+  string toString() const { return string(data_, length()); }  // 会对字符串进行拷贝
+  // StringPiece就是std::string_view，仅记录字符串指针和字符串长度，不拷贝字符串
   StringPiece toStringPiece() const { return StringPiece(data_, length()); }
 
  private:
@@ -70,9 +72,11 @@ class FixedBuffer : noncopyable
   static void cookieStart();
   static void cookieEnd();
 
+  // 每条内存中的日志都带有 cookie，其值为某个函数的地址，这样当程序崩溃时，可以通过
+  // 在 core dump 文件中查找 cookie 以定位尚未来得及写入到磁盘中的日志（P111）
   void (*cookie_)();
   char data_[SIZE];
-  char* cur_;
+  char* cur_;  // 指向第一个空闲位置
 };
 
 }  // namespace detail
@@ -81,6 +85,7 @@ class LogStream : noncopyable
 {
   typedef LogStream self;
  public:
+  // 缓冲区（4000 bytes）
   typedef detail::FixedBuffer<detail::kSmallBuffer> Buffer;
 
   self& operator<<(bool v)
@@ -98,6 +103,7 @@ class LogStream : noncopyable
   self& operator<<(long long);
   self& operator<<(unsigned long long);
 
+  // 输出地址
   self& operator<<(const void*);
 
   self& operator<<(float v)
@@ -155,7 +161,7 @@ class LogStream : noncopyable
 
   void append(const char* data, int len) { buffer_.append(data, len); }
   const Buffer& buffer() const { return buffer_; }
-  void resetBuffer() { buffer_.reset(); }
+  void resetBuffer() { buffer_.reset(); }  // 清空缓冲区
 
  private:
   void staticCheck();

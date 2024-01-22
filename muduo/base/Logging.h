@@ -37,6 +37,7 @@ class Logger
       : data_(arr),
         size_(N-1)
     {
+      // 找到最后一个 `/` 字符，从而得到文件名
       const char* slash = strrchr(data_, '/'); // builtin function
       if (slash)
       {
@@ -85,6 +86,7 @@ class Impl
   typedef Logger::LogLevel LogLevel;
   Impl(LogLevel level, int old_errno, const SourceFile& file, int line);
   void formatTime();
+  // 添加文件名和行号信息
   void finish();
 
   Timestamp time_;
